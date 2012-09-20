@@ -187,7 +187,8 @@ public class Stage extends InputAdapter implements Disposable {
 			pointerOverActors[pointer] = fireEnterAndExit(overLast, pointerScreenX[pointer], pointerScreenY[pointer], pointer);
 		}
 		// Update over actor for the mouse on the desktop.
-		if (Gdx.app.getType() == ApplicationType.Desktop)
+		ApplicationType type = Gdx.app.getType();
+		if (type == ApplicationType.Desktop || type == ApplicationType.Applet || type == ApplicationType.WebGL)
 			mouseOverActor = fireEnterAndExit(mouseOverActor, mouseScreenX, mouseScreenY, -1);
 
 		root.act(delta);
@@ -347,10 +348,15 @@ public class Stage extends InputAdapter implements Disposable {
 	 * event. This event only occurs on the desktop. */
 	public boolean scrolled (int amount) {
 		if (scrollFocus == null) return false;
+
+		screenToStageCoordinates(stageCoords.set(mouseScreenX, mouseScreenY));
+
 		InputEvent event = Pools.obtain(InputEvent.class);
 		event.setStage(this);
 		event.setType(InputEvent.Type.scrolled);
 		event.setScrollAmount(amount);
+		event.setStageX(stageCoords.x);
+		event.setStageY(stageCoords.y);
 		scrollFocus.fire(event);
 		boolean handled = event.isHandled();
 		Pools.free(event);
